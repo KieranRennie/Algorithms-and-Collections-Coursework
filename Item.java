@@ -1,4 +1,4 @@
-package part1;
+package package1;
 public class Item implements Comparable<Item> {
 	
 	/**
@@ -77,5 +77,7 @@ public class Item implements Comparable<Item> {
 	public int hashCode() {
 		return value.hashCode();
 	}
+	
+	
 	
 }

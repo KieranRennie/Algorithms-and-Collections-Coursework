@@ -1,4 +1,4 @@
-package part1;
+package package1;
 import java.util.*;
 /**
  * Student - B00278559
@@ -14,163 +14,187 @@ public class Part1 {
      * 
      * @param args the command line arguments
      */
+	
+    /**
+     * This method is used to calculate the height of a red-black tree
+     * and was taken from the handout provided.
+     */
+    private static float height (TreeSet<Item> tree) {
+    	long maxComp = 0;
+    	for (Item current : tree) {
+    	Item.resetCompCount();
+    	tree.contains(current);
+    	if (maxComp < Item.getCompCount()) {
+    	maxComp = Item.getCompCount();
+    	}
+    	}
+    	return maxComp-1;
+    	}
+	
+    /**
+     * Main method of program
+     */
     public static void main(String[] args) {
+    	
+    	//Set-up of the containers used
         BinarySearchTree<Item> bst = new BinarySearchTree<>();
-        List<Item> dataSet = new LinkedList<>();
+        HashSet<Item> hash = new HashSet<>();
+        TreeSet<Item> rbt = new TreeSet<>();
+        
+        //Creation of Linked List that will hold the data set used by
+        //the containers. The complete data set is necessary to hold
+        //a copy of the data set.
+        LinkedList<Item> dataSet = new LinkedList<>();
+        LinkedList<Item> completeDataSet = new LinkedList<>();
+        
+        LinkedList<Integer> DeletedItems = new LinkedList<>();
+        LinkedList<Integer> DeletedItemsCopy = new LinkedList<>();
+        
         Random ran = new Random();
-        
-        /**
-         * This is the original testing of the program.
-         */
-        
-        System.out.print("Please enter the size of the data set: ");
-        try (Scanner keyboard = new Scanner(System.in)) {
-            int size = keyboard.nextInt();
-            final int N = size*2; // to ensure duplicates generated on most runs
-            System.out.printf("The size of the dataSet for this run is %d \n",
-                    size);
-            int count = 0;
-            while (bst.size() < size) {
-                int candidate = ran.nextInt(N)*2+1;  // add odd values only
-                count++;
-                if (bst.add(new Item(candidate))) {
-                    dataSet.add(new Item(candidate));
-                }
-            }
-            System.out.printf("Added %d elements from %d random numbers.\n",
-                    size, count);
-            int errorCount = 0;
-            System.out.println("Testing contains() method:");
-            for (Item d : dataSet) {
-                if (!bst.contains(d)) {
-                    errorCount++;
-                    System.out.printf(
-                            "Error %d: contains(%d) returns false.\n",
-                            errorCount, d);
-                }
-                if (bst.contains(new Item((d.value()/2)*2))) { // even number tests for absence
-                    errorCount++;
-                    System.out.printf(
-                            "Error %d: contains(%d) returns true.\n",
-                            errorCount, (d.value()/2)*2);
-                }
-            }
-            System.out.printf("Testing contents complete with %d errors ",
-                    errorCount);
-            System.out.println();
-            System.out.println("Testing enumerator throws an exception " +
-                    "if tree is modified while in use.");
-            try {
-                for (Item i : bst) {
-                    bst.add(i = new Item(-1));
-                }
-                errorCount++;
-            }
-            catch (ConcurrentModificationException e) {}
-            System.out.println("Testing exception throwing complete.");
-            System.out.printf( "Errors now %d.\n", errorCount);
-            System.out.println();
-            bst.remove(new Item(-1));
-            if (bst.size() <= 25) {
-                int counter = 1;
-                System.out.println("Tree contents are:");
-                for (Item i : bst) {
-                    System.out.printf("Item number %d is: %d\n", counter++, i.value());
-                }
-            }
-            
-            
-            if (bst.size() <= 25) {
-                System.out.println("\nDisplaying Breadth First Insertion:");
-                System.out.println(bst.BreadthFirst());
-                }
-            
-            System.out.println("Tree Height = " + bst.TreeHeight(bst.root));
-            
-            System.out.println("Removing tree contents:");
-            count = bst.size();
-            errorCount = 0;
-            for (Item d : dataSet) {
-                if (bst.remove(d)) {
-                    count--;
-                    if (count != bst.size()) {
-                        errorCount++;  // tree size was not updated
-                    }
-                }
-                else  { // d was not removed
-                    errorCount++;
-                }
-            }
-            System.out.printf("%d items removed with %d errors.\n", 
-                    size, errorCount);
-            System.out.printf("Tree size = %d\n", bst.size());
-            System.out.println("Any remaining contents listed below:");
-            for (Item i : bst) {
-                System.out.println(i);
-            }
-            System.out.println("Testing complete....\n");
+        int errorCount = 0;
+        int count = 0;
+
+
             
             System.out.println("Starting Experimentation...\n");
             
-            /**
-             * This is the testing of the 100 range
-             */
             
+            for (int dataSize=100;
+            		dataSize<=100000;
+            		dataSize*=10) {
+            	
             dataSet.clear();
             
             Item.resetCompCount();
-            
-            System.out.println("Adding numbers 1 through 100 in order...\n");
             
             int counter = 0 ;
             
-            while(bst.size < 100){
+            /**
+             * Filling of data set with all numbers from one to dataSize.
+             */
+            
+            while(dataSet.size() < dataSize){
             	int order =  counter + 1;
             	counter ++;
-                if (bst.add(new Item(order))) {
                     dataSet.add(new Item(order));
-                }
             }
             
-            System.out.println("Number of Comparisons: " + Item.getCompCount() + "\n");
+            /**
+             * Creating copy of data set
+             */
+            completeDataSet = (LinkedList) dataSet.clone();
             
-            System.out.println("Tree Height: " + bst.TreeHeight(bst.root));
+            /**
+             * This part of the program takes the data in the data set and adds it to the various
+             * containers. It does this by removing each item randomly from the data set to ensure
+             * there are no duplicates. Once all of the data has been added to a container, the
+             * data set is refreshed from the copy that was created.
+             */
             
-            System.out.println("\n Clearing Tree...\n");
-            
-            for (Item d : dataSet) {
-                if (bst.remove(d)) {
-                    count--;
-                    if (count != bst.size()) {
-                        errorCount++;  // tree size was not updated
-                    }
-                }
-                else  { // d was not removed
-                    errorCount++;
-                }
-            }
-            
-            System.out.println("Complete....\n");
-            
-            dataSet.clear();
-            
-            Item.resetCompCount();
-            
-            System.out.println("Adding numbers 1 through 100 randomly...\n");
+            System.out.printf("Adding numbers 1 through %d randomly...\n" , dataSize);
             
             counter = 0 ;
             
-            while(bst.size < 100){
-            	int random = ran.nextInt(100);
+            // Adding to Linked List
+            while(bst.size < dataSize){
+            	int random = ran.nextInt(dataSet.size());
             	counter ++;
-                if (bst.add(new Item(random))) {
-                    dataSet.add(new Item(random));
-                }
+            	bst.add(dataSet.remove(random));
+            	}
+            
+            dataSet = (LinkedList) completeDataSet.clone();
+            
+            //Adding to Red-Black tree.
+            while(rbt.size() < dataSize){
+            	int random = ran.nextInt(dataSet.size());
+            	counter ++;
+            	rbt.add(dataSet.remove(random));
+            	}
+            
+            dataSet = (LinkedList) completeDataSet.clone();
+            
+            //Adding to Hash-Map
+            while(hash.size() < dataSize){
+            	int random = ran.nextInt(dataSet.size());
+            	counter ++;
+            	hash.add(dataSet.remove(random));
+            	}
+            
+            /**
+             * The following are the successful searches for ten random items
+             * for each container type.
+             */
+            
+            //Binary Search Tree
+            System.out.println("Binary Search Tree Successful Search Results:");
+            
+            for (int i = 0; i < 10 ; i++){
+            	
+                Item.resetCompCount();
+            	
+            	int search = ran.nextInt(dataSize);
+            	
+            	bst.getEntry(new Item(search));
+            	
+            	System.out.printf("Searched For: %d\n" , search);
+            	System.out.printf("Number of Comparisons: %d\n\n" , Item.getCompCount());
+            	
+            	
             }
             
-            System.out.println("Number of Comparisons: " + Item.getCompCount() + "\n");
+            Item.resetCompCount();
             
-            System.out.println("Tree Height: " + bst.TreeHeight(bst.root));
+            //Red-Black Tree
+            System.out.println("Red-Black Tree Successful Search Results:");
+            
+            for (int i = 0; i < 10 ; i++){
+            	
+                Item.resetCompCount();
+            	
+            	int search = ran.nextInt(dataSize);
+            	
+            	rbt.contains(new Item(search));
+            	
+            	System.out.printf("Searched For: %d\n" , search);
+            	System.out.printf("Number of Comparisons: %d\n\n" , Item.getCompCount());
+            	
+            	
+            }
+            
+            Item.resetCompCount();
+            
+            //Hash-Map
+            System.out.println("Hash Map Successful Search Results:");
+            
+            for (int i = 0; i < 10 ; i++){
+            	
+                Item.resetCompCount();
+            	
+            	int search = ran.nextInt(dataSize);	
+            	
+            	hash.contains(new Item(search));
+            	
+            	System.out.printf("Searched For: %d\n" , search);
+            	System.out.printf("Number of Comparisons: %d\n\n" , Item.getCompCount());
+            	
+            	
+            }
+            
+            Item.resetCompCount();
+            
+            /**
+             * Displaying the various details of each container.
+             */
+            
+            System.out.printf("Binary Search Tree Height: %d \n" , bst.treeHeight());
+            
+            System.out.println("Red-Black Tree Tree Height: " + height(rbt));
+            
+            System.out.printf("Binary Search Tree Leaves: %d \n" , bst.leaves());
+            
+            /**
+             * Removing the contents of each container.
+             */
             
             System.out.println("\n Clearing Tree...");
             
@@ -186,297 +210,247 @@ public class Part1 {
                 }
             } 
             
+            rbt.removeAll(rbt);
+            
+            hash.removeAll(hash);
             
             dataSet.clear();
+            
+            /**
+             * This part of the program adds only odd numbers to the containers so that
+             * the program can conduct searches that are unsuccessful. This is done by
+             * searching for only even search terms.
+             */
+            
+            System.out.printf("Adding odd numbers 1 through %d randomly...\n\n" , dataSize * 2);
+            
+            counter = 0 ;
+            
+            //Binary Search Tree
+            
+            while(bst.size < dataSize){
+            	int random = ran.nextInt(dataSet.size());
+            	counter ++;
+            	bst.add(new Item(dataSet.remove(random).value() * 2 + 1));
+            	}
+            
+            dataSet = (LinkedList) completeDataSet.clone();
+            
+            //Red-Black Tree
+            
+            while(rbt.size() < dataSize){
+            	int random = ran.nextInt(dataSet.size());
+            	counter ++;
+            	rbt.add(new Item(dataSet.remove(random).value() * 2 + 1));
+            	}
+            
+            dataSet = (LinkedList) completeDataSet.clone();
+            
+            //Hash-Map
+            
+            while(hash.size() < dataSize){
+            	int random = ran.nextInt(dataSet.size());
+            	counter ++;
+            	hash.add(new Item(dataSet.remove(random).value() * 2 + 1));
+            	}
             
             Item.resetCompCount();
             
             /**
-             * This is the testing of the 1000 range
+             * Conducting unsuccessful searches.
              */
             
-            System.out.println("Adding numbers 1 through 1000 in order...\n");
+            //Binary Search Tree
             
-            counter = 0 ;
+            System.out.println("Binary Search Tree Unsuccessful Search Results:");
             
-            while(bst.size < 1000){
-            	int order =  counter + 1;
-            	counter ++;
-                if (bst.add(new Item(order))) {
-                    dataSet.add(new Item(order));
-                }
+            for (int i = 0; i < 10 ; i++){
+            	
+                Item.resetCompCount();
+            	
+            	int search = (ran.nextInt(dataSize) * 2);
+            	
+            	bst.getEntry(new Item(search));
+            	
+            	System.out.printf("Searched For: %d\n" , search);
+            	System.out.printf("Number of Comparisons: %d\n\n" , Item.getCompCount());
+            	
+            	
             }
-            
-            System.out.println("Number of Comparisons: " + Item.getCompCount() + "\n");
-            
-            System.out.println("Tree Height: " + bst.TreeHeight(bst.root));
-            
-            System.out.println("\n Clearing Tree...\n");
-            
-            for (Item d : dataSet) {
-                if (bst.remove(d)) {
-                    count--;
-                    if (count != bst.size()) {
-                        errorCount++;  // tree size was not updated
-                    }
-                }
-                else  { // d was not removed
-                    errorCount++;
-                }
-            }
-            
-            System.out.println("Complete....\n");
-            
-            dataSet.clear();
             
             Item.resetCompCount();
             
-            System.out.println("Adding numbers 1 through 1000 randomly...\n");
+            //Red-Black Tree
             
-            counter = 0 ;
+            System.out.println("Red-Black Tree Unsuccessful Search Results:");
             
-            while(bst.size < 1000){
-            	int random = ran.nextInt(1000);
-            	counter ++;
-                if (bst.add(new Item(random))) {
-                    dataSet.add(new Item(random));
-                }
+            for (int i = 0; i < 10 ; i++){
+            	
+                Item.resetCompCount();
+            	
+            	int search = (ran.nextInt(dataSize) * 2);
+            	
+            	rbt.contains(new Item(search));
+            	
+            	System.out.printf("Searched For: %d\n" , search);
+            	System.out.printf("Number of Comparisons: %d\n\n" , Item.getCompCount());
+            	
+            	
             }
             
-            System.out.println("Number of Comparisons: " + Item.getCompCount() + "\n");
+            Item.resetCompCount();
             
-            System.out.println("Tree Height: " + bst.TreeHeight(bst.root));
+            //Hash-MAp
             
-            System.out.println("\n Clearing Tree...");
+            System.out.println("Hash Map Unsuccessful Search Results:");
             
-            for (Item d : dataSet) {
-                if (bst.remove(d)) {
-                    count--;
-                    if (count != bst.size()) {
-                        errorCount++;  // tree size was not updated
-                    }
-                }
-                else  { // d was not removed
-                    errorCount++;
-                }
+            for (int i = 0; i < 10 ; i++){
+            	
+                Item.resetCompCount();
+            	
+            	int search = (ran.nextInt(dataSize) * 2);	
+            	
+            	hash.contains(new Item(search));
+            	
+            	System.out.printf("Searched For: %d\n" , search);
+            	System.out.printf("Number of Comparisons: %d\n\n" , Item.getCompCount());
+            	
+            	
+            }
+            
+            Item.resetCompCount();
+   
+
+            
+            /**
+             * This part of the program will test whether repeatedly deleting and reinserting data
+             * will have an effect on searching. I am repeating the creating the containers
+             * with random numbers from 1 to dataSize once again.
+             */
+            
+            System.out.println("\n Conducting Deletion and Reinsertion Tests");
+            
+            for (int i = 0; i < 10; i++){
+            	
+            	for (int x = 0; x<(dataSize/5);x++){
+            		
+            		Integer CurrentDelete = new Integer(ran.nextInt(dataSize));
+            		
+            		DeletedItems.add(CurrentDelete);
+            		
+            		bst.remove(new Item(CurrentDelete));
+            		rbt.remove(new Item(CurrentDelete));
+            		hash.remove(new Item(CurrentDelete));
+            		
+            	}
+            
+            	DeletedItemsCopy = (LinkedList)DeletedItems.clone();
+            	
+                while(bst.size() < dataSize){
+                	int random = ran.nextInt(DeletedItems.size());
+                	counter ++;
+                	bst.add(new Item(DeletedItems.remove(random)));
+                	}
+            	
+                DeletedItems = (LinkedList)DeletedItemsCopy.clone();
+                
+                while(rbt.size() < dataSize){
+                	int random = ran.nextInt(DeletedItems.size());
+                	counter ++;
+                	rbt.add(new Item(DeletedItems.remove(random)));
+                	}
+                
+                DeletedItems = (LinkedList)DeletedItemsCopy.clone();
+                
+                while(hash.size() < dataSize){
+                	int random = ran.nextInt(DeletedItems.size());
+                	counter ++;
+                	hash.add(new Item(DeletedItems.remove(random)));
+                	}
+                
+                
+            	
             }
             
             /**
-             * This is the testing of the 10000 range
+             * The following are the successful searches for ten random items
+             * for each container type.
              */
             
+            //Binary Search Tree
+            System.out.println("Binary Search Tree Successful Search Results:");
             
-            dataSet.clear();
+            for (int i = 0; i < 10 ; i++){
+            	
+                Item.resetCompCount();
+            	
+            	int search = ran.nextInt(dataSize);
+            	
+            	bst.getEntry(new Item(search));
+            	
+            	System.out.printf("Searched For: %d\n" , search);
+            	System.out.printf("Number of Comparisons: %d\n\n" , Item.getCompCount());
+            	
+            	
+            }
             
             Item.resetCompCount();
             
-            System.out.println("Adding numbers 1 through 10000 in order...\n");
+            //Red-Black Tree
+            System.out.println("Red-Black Tree Successful Search Results:");
             
-            counter = 0 ;
-            
-            while(bst.size < 10000){
-            	int order =  counter + 1;
-            	counter ++;
-                if (bst.add(new Item(order))) {
-                    dataSet.add(new Item(order));
-                }
+            for (int i = 0; i < 10 ; i++){
+            	
+                Item.resetCompCount();
+            	
+            	int search = ran.nextInt(dataSize);
+            	
+            	rbt.contains(new Item(search));
+            	
+            	System.out.printf("Searched For: %d\n" , search);
+            	System.out.printf("Number of Comparisons: %d\n\n" , Item.getCompCount());
+            	
+            	
             }
-            
-            System.out.println("Number of Comparisons: " + Item.getCompCount() + "\n");
-            
-            System.out.println("Tree Height: " + bst.TreeHeight(bst.root));
-            
-            System.out.println("\n Clearing Tree...\n");
-            
-            for (Item d : dataSet) {
-                if (bst.remove(d)) {
-                    count--;
-                    if (count != bst.size()) {
-                        errorCount++;  // tree size was not updated
-                    }
-                }
-                else  { // d was not removed
-                    errorCount++;
-                }
-            }
-            
-            System.out.println("Complete....\n");
-            
-            dataSet.clear();
             
             Item.resetCompCount();
             
-            System.out.println("Adding numbers 1 through 10000 randomly...\n");
+            //Hash-Map
+            System.out.println("Hash Map Successful Search Results:");
             
-            counter = 0 ;
-            
-            while(bst.size < 10000){
-            	int random = ran.nextInt(10000);
-            	counter ++;
-                if (bst.add(new Item(random))) {
-                    dataSet.add(new Item(random));
-                }
+            for (int i = 0; i < 10 ; i++){
+            	
+                Item.resetCompCount();
+            	
+            	int search = ran.nextInt(dataSize);	
+            	
+            	hash.contains(new Item(search));
+            	
+            	System.out.printf("Searched For: %d\n" , search);
+            	System.out.printf("Number of Comparisons: %d\n\n" , Item.getCompCount());
+            	
+            	
             }
             
-            System.out.println("Number of Comparisons: " + Item.getCompCount() + "\n");
-            
-            System.out.println("Tree Height: " + bst.TreeHeight(bst.root));
-            
-            System.out.println("\n Clearing Tree...");
-            
-            for (Item d : dataSet) {
-                if (bst.remove(d)) {
-                    count--;
-                    if (count != bst.size()) {
-                        errorCount++;  // tree size was not updated
-                    }
-                }
-                else  { // d was not removed
-                    errorCount++;
-                }
-            }
+            Item.resetCompCount();
             
             /**
-             * This is the testing of the 100000 range
+             * Displaying the various details of each container.
              */
             
-            dataSet.clear();
+            System.out.printf("Binary Search Tree Height: %d \n" , bst.treeHeight());
             
-            Item.resetCompCount();
+            System.out.println("Red-Black Tree Tree Height: " + height(rbt));
             
-            System.out.println("Adding numbers 1 through 100000 in order...\n");
+            System.out.printf("Binary Search Tree Leaves: %d \n" , bst.leaves());
             
-            counter = 0 ;
             
-            while(bst.size < 100000){
-            	int order =  counter + 1;
-            	counter ++;
-                if (bst.add(new Item(order))) {
-                    dataSet.add(new Item(order));
-                }
-            }
-            
-            System.out.println("Number of Comparisons: " + Item.getCompCount() + "\n");
-            
-            System.out.println("Tree Height: " + bst.TreeHeight(bst.root));
-            
-            System.out.println("\n Clearing Tree...\n");
-            
-            for (Item d : dataSet) {
-                if (bst.remove(d)) {
-                    count--;
-                    if (count != bst.size()) {
-                        errorCount++;  // tree size was not updated
-                    }
-                }
-                else  { // d was not removed
-                    errorCount++;
-                }
-            }
-            
-            System.out.println("Complete....\n");
-            
-            dataSet.clear();
-            
-            Item.resetCompCount();
-            
-            System.out.println("Adding numbers 1 through 100000 randomly...\n");
-            
-            counter = 0 ;
-            
-            while(bst.size < 100000){
-            	int random = ran.nextInt(100000);
-            	counter ++;
-                if (bst.add(new Item(random))) {
-                    dataSet.add(new Item(random));
-                }
-            }
-            
-            System.out.println("Number of Comparisons: " + Item.getCompCount() + "\n");
-            
-            System.out.println("Tree Height: " + bst.TreeHeight(bst.root));
-            
-            System.out.println("\n Clearing Tree...");
-            
-            for (Item d : dataSet) {
-                if (bst.remove(d)) {
-                    count--;
-                    if (count != bst.size()) {
-                        errorCount++;  // tree size was not updated
-                    }
-                }
-                else  { // d was not removed
-                    errorCount++;
-                }
-            }
             
             /**
-             * This is the testing of the 200 range with only odd numbers
+             * Removing the contents of each container.
              */
             
-            dataSet.clear();
-            
-            Item.resetCompCount();
-            
-            System.out.println("Adding odd numbers 1 through 200 in order...\n");
-            
-            counter = 0 ;
-            
-            while(bst.size < 100){
-            	int order =  counter + 1;
-            	counter ++;
-            	
-            	int in = order *2 + 1;
-            	
-                if (bst.add(new Item(in))) {
-                    dataSet.add(new Item(in));
-                }
-            }
-            
-            System.out.println("Number of Comparisons: " + Item.getCompCount() + "\n");
-            
-            System.out.println("Tree Height: " + bst.TreeHeight(bst.root));
-            
-            System.out.println("\n Clearing Tree...\n");
-            
-            for (Item d : dataSet) {
-                if (bst.remove(d)) {
-                    count--;
-                    if (count != bst.size()) {
-                        errorCount++;  // tree size was not updated
-                    }
-                }
-                else  { // d was not removed
-                    errorCount++;
-                }
-            }
-            
-            System.out.println("Complete....\n");
-            
-            dataSet.clear();
-            
-            Item.resetCompCount();
-            
-            System.out.println("Adding odd numbers 1 through 200 randomly...\n");
-            
-            counter = 0 ;
-            
-            while(bst.size < 100){
-            	int random = ran.nextInt(200);
-            	counter ++;
-            	
-            	int in = random *2 + 1;
-            	
-                if (bst.add(new Item(in))) {
-                    dataSet.add(new Item(in));
-                }
-            }
-            
-            System.out.println("Number of Comparisons: " + Item.getCompCount() + "\n");
-            
-            System.out.println("Tree Height: " + bst.TreeHeight(bst.root));
-            
-            System.out.println("\n Clearing Tree...");
+            System.out.println("\n Clearing Containers...");
             
             for (Item d : dataSet) {
                 if (bst.remove(d)) {
@@ -490,615 +464,16 @@ public class Part1 {
                 }
             } 
             
+            rbt.removeAll(rbt);
+            
+            hash.removeAll(hash);
             
             dataSet.clear();
             
-            Item.resetCompCount();
-            
-            /**
-             * This is the testing of the 2000 range with only odd numbers
-             */
-            
-            System.out.println("Adding odd numbers 1 through 2000 in order...\n");
-            
-            counter = 0 ;
-            
-            while(bst.size < 1000){
-            	int order =  counter + 1;
-            	counter ++;
-            	
-            	int in = order *2 + 1;
-            	
-                if (bst.add(new Item(in))) {
-                    dataSet.add(new Item(in));
-                }
             }
             
-            System.out.println("Number of Comparisons: " + Item.getCompCount() + "\n");
             
-            System.out.println("Tree Height: " + bst.TreeHeight(bst.root));
-            
-            System.out.println("\n Clearing Tree...\n");
-            
-            for (Item d : dataSet) {
-                if (bst.remove(d)) {
-                    count--;
-                    if (count != bst.size()) {
-                        errorCount++;  // tree size was not updated
-                    }
-                }
-                else  { // d was not removed
-                    errorCount++;
-                }
-            }
-            
-            System.out.println("Complete....\n");
-            
-            dataSet.clear();
-            
-            Item.resetCompCount();
-            
-            System.out.println("Adding odd numbers 1 through 2000 randomly...\n");
-            
-            counter = 0 ;
-            
-            while(bst.size < 1000){
-            	int random = ran.nextInt(2000);
-            	counter ++;
-            	
-            	int in = random *2 + 1;
-            	
-                if (bst.add(new Item(in))) {
-                    dataSet.add(new Item(in));
-                }
-            }
-            
-            System.out.println("Number of Comparisons: " + Item.getCompCount() + "\n");
-            
-            System.out.println("Tree Height: " + bst.TreeHeight(bst.root));
-            
-            System.out.println("\n Clearing Tree...");
-            
-            for (Item d : dataSet) {
-                if (bst.remove(d)) {
-                    count--;
-                    if (count != bst.size()) {
-                        errorCount++;  // tree size was not updated
-                    }
-                }
-                else  { // d was not removed
-                    errorCount++;
-                }
-            }
-            
-            /**
-             * This is the testing of the 20000 range odd numbers only
-             */
-            
-            
-            dataSet.clear();
-            
-            Item.resetCompCount();
-            
-            System.out.println("Adding odd numbers 1 through 20000 in order...\n");
-            
-            counter = 0 ;
-            
-            while(bst.size < 10000){
-            	int order =  counter + 1;
-            	counter ++;
-            	
-            	int in = order *2 + 1;
-            	
-                if (bst.add(new Item(in))) {
-                    dataSet.add(new Item(in));
-                }
-            }
-            
-            System.out.println("Number of Comparisons: " + Item.getCompCount() + "\n");
-            
-            System.out.println("Tree Height: " + bst.TreeHeight(bst.root));
-            
-            System.out.println("\n Clearing Tree...\n");
-            
-            for (Item d : dataSet) {
-                if (bst.remove(d)) {
-                    count--;
-                    if (count != bst.size()) {
-                        errorCount++;  // tree size was not updated
-                    }
-                }
-                else  { // d was not removed
-                    errorCount++;
-                }
-            }
-            
-            System.out.println("Complete....\n");
-            
-            dataSet.clear();
-            
-            Item.resetCompCount();
-            
-            System.out.println("Adding odd numbers 1 through 20000 randomly...\n");
-            
-            counter = 0 ;
-            
-            while(bst.size < 10000){
-            	int random = ran.nextInt(20000);
-            	counter ++;
-            	
-            	int in = random *2 + 1;
-            	
-                if (bst.add(new Item(in))) {
-                    dataSet.add(new Item(in));
-                }
-            }
-            
-            System.out.println("Number of Comparisons: " + Item.getCompCount() + "\n");
-            
-            System.out.println("Tree Height: " + bst.TreeHeight(bst.root));
-            
-            System.out.println("\n Clearing Tree...");
-            
-            for (Item d : dataSet) {
-                if (bst.remove(d)) {
-                    count--;
-                    if (count != bst.size()) {
-                        errorCount++;  // tree size was not updated
-                    }
-                }
-                else  { // d was not removed
-                    errorCount++;
-                }
-            }
-            
-            /**
-             * This is the odd numbers testing of the 200000 range
-             */
-            
-            dataSet.clear();
-            
-            Item.resetCompCount();
-            
-            System.out.println("Adding odd numbers 1 through 200000 in order...\n");
-            
-            counter = 0 ;
-            
-            while(bst.size < 100000){
-            	int order =  counter + 1;
-            	counter ++;
-            	
-            	int in = order *2 + 1;
-            	
-                if (bst.add(new Item(in))) {
-                    dataSet.add(new Item(in));
-                }
-            }
-            
-            System.out.println("Number of Comparisons: " + Item.getCompCount() + "\n");
-            
-            System.out.println("Tree Height: " + bst.TreeHeight(bst.root));
-            
-            System.out.println("\n Clearing Tree...\n");
-            
-            for (Item d : dataSet) {
-                if (bst.remove(d)) {
-                    count--;
-                    if (count != bst.size()) {
-                        errorCount++;  // tree size was not updated
-                    }
-                }
-                else  { // d was not removed
-                    errorCount++;
-                }
-            }
-            
-            System.out.println("Complete....\n");
-            
-            dataSet.clear();
-            
-            Item.resetCompCount();
-            
-            System.out.println("Adding odd numbers 1 through 200000 randomly...\n");
-            
-            counter = 0 ;
-            
-            while(bst.size < 100000){
-            	int random = ran.nextInt(200000);
-            	counter ++;
-            	
-            	int in = random *2 + 1;
-            	
-                if (bst.add(new Item(in))) {
-                    dataSet.add(new Item(in));
-                }
-            }
-            
-            System.out.println("Number of Comparisons: " + Item.getCompCount() + "\n");
-            
-            System.out.println("Tree Height: " + bst.TreeHeight(bst.root));
-            
-            System.out.println("\n Clearing Tree...");
-            
-            for (Item d : dataSet) {
-                if (bst.remove(d)) {
-                    count--;
-                    if (count != bst.size()) {
-                        errorCount++;  // tree size was not updated
-                    }
-                }
-                else  { // d was not removed
-                    errorCount++;
-                }
-            }
-            
-            /**
-             * This is the testing of the 200 range with only odd numbers with failed searches
-             */
-            
-            dataSet.clear();
-            
-            System.out.println("Adding odd numbers 1 through 200 in order...\n");
-            
-            counter = 0 ;
-            
-            while(bst.size < 100){
-            	int order =  counter + 1;
-            	counter ++;
-            	
-            	int in = order *2 + 1;
-            	
-                if (bst.add(new Item(in))) {
-                    dataSet.add(new Item(in));
-                }
-            }
-            
-            Item.resetCompCount();
-            
-            for (Item d : dataSet) {
-            	bst.contains(new Item((d.value()*2)));
-            }
-            
-            System.out.println("Number of Comparisons for Failed Searches: " + Item.getCompCount() + "\n");
-            
-            System.out.println("\n Clearing Tree...\n");
-            
-            for (Item d : dataSet) {
-                if (bst.remove(d)) {
-                    count--;
-                    if (count != bst.size()) {
-                        errorCount++;  // tree size was not updated
-                    }
-                }
-                else  { // d was not removed
-                    errorCount++;
-                }
-            }
-            
-            System.out.println("Complete....\n");
-            
-            dataSet.clear();
-            
-            System.out.println("Adding odd numbers 1 through 200 randomly...\n");
-            
-            counter = 0 ;
-            
-            while(bst.size < 100){
-            	int random = ran.nextInt(200);
-            	counter ++;
-            	
-            	int in = random *2 + 1;
-            	
-                if (bst.add(new Item(in))) {
-                    dataSet.add(new Item(in));
-                }
-            }
-            
-            Item.resetCompCount();
-            
-            for (Item d : dataSet) {
-            	bst.contains(new Item((d.value()*2)));
-            }
-            
-            System.out.println("Number of Comparisons for Failed Searches: " + Item.getCompCount() + "\n");
-            
-            System.out.println("Tree Height: " + bst.TreeHeight(bst.root));
-            
-            System.out.println("\n Clearing Tree...");
-            
-            for (Item d : dataSet) {
-                if (bst.remove(d)) {
-                    count--;
-                    if (count != bst.size()) {
-                        errorCount++;  // tree size was not updated
-                    }
-                }
-                else  { // d was not removed
-                    errorCount++;
-                }
-            } 
-            
-            
-            dataSet.clear();
-            
-            Item.resetCompCount();
-            
-            /**
-             * This is the testing of the 2000 range with only odd numbers
-             */
-            
-            System.out.println("Adding odd numbers 1 through 2000 in order...\n");
-            
-            counter = 0 ;
-            
-            while(bst.size < 1000){
-            	int order =  counter + 1;
-            	counter ++;
-            	
-            	int in = order *2 + 1;
-            	
-                if (bst.add(new Item(in))) {
-                    dataSet.add(new Item(in));
-                }
-            }
-            
-            Item.resetCompCount();
-            
-            for (Item d : dataSet) {
-            	bst.contains(new Item((d.value()*2)));
-            }
-            
-            System.out.println("Number of Comparisons for Failed Searches: " + Item.getCompCount() + "\n");
-            
-            System.out.println("\n Clearing Tree...\n");
-            
-            for (Item d : dataSet) {
-                if (bst.remove(d)) {
-                    count--;
-                    if (count != bst.size()) {
-                        errorCount++;  // tree size was not updated
-                    }
-                }
-                else  { // d was not removed
-                    errorCount++;
-                }
-            }
-            
-            System.out.println("Complete....\n");
-            
-            dataSet.clear();
-            
-            System.out.println("Adding odd numbers 1 through 2000 randomly...\n");
-            
-            counter = 0 ;
-            
-            while(bst.size < 1000){
-            	int random = ran.nextInt(2000);
-            	counter ++;
-            	
-            	int in = random *2 + 1;
-            	
-                if (bst.add(new Item(in))) {
-                    dataSet.add(new Item(in));
-                }
-            }
-            
-            Item.resetCompCount();
-            
-            for (Item d : dataSet) {
-            	bst.contains(new Item((d.value()*2)));
-            }
-            
-            System.out.println("Number of Comparisons for Failed Searches: " + Item.getCompCount() + "\n");
-            
-            System.out.println("Tree Height: " + bst.TreeHeight(bst.root));
-            
-            System.out.println("\n Clearing Tree...");
-            
-            for (Item d : dataSet) {
-                if (bst.remove(d)) {
-                    count--;
-                    if (count != bst.size()) {
-                        errorCount++;  // tree size was not updated
-                    }
-                }
-                else  { // d was not removed
-                    errorCount++;
-                }
-            } 
-            
-            
-            dataSet.clear();
-            
-            /**
-             * This is the testing of the 20000 range odd numbers only
-             */
-            
-            
-            dataSet.clear();
-            
-            Item.resetCompCount();
-            
-            System.out.println("Adding odd numbers 1 through 20000 in order...\n");
-            
-            counter = 0 ;
-            
-            while(bst.size < 10000){
-            	int order =  counter + 1;
-            	counter ++;
-            	
-            	int in = order *2 + 1;
-            	
-                if (bst.add(new Item(in))) {
-                    dataSet.add(new Item(in));
-                }
-            }
-            
-            Item.resetCompCount();
-            
-            for (Item d : dataSet) {
-            	bst.contains(new Item((d.value()*2)));
-            }
-            
-            System.out.println("Number of Comparisons for Failed Searches: " + Item.getCompCount() + "\n");
-            
-            System.out.println("\n Clearing Tree...\n");
-            
-            for (Item d : dataSet) {
-                if (bst.remove(d)) {
-                    count--;
-                    if (count != bst.size()) {
-                        errorCount++;  // tree size was not updated
-                    }
-                }
-                else  { // d was not removed
-                    errorCount++;
-                }
-            }
-            
-            System.out.println("Complete....\n");
-            
-            dataSet.clear();
-            
-            Item.resetCompCount();
-            
-            System.out.println("Adding odd numbers 1 through 20000 randomly...\n");
-            
-            counter = 0 ;
-            
-            while(bst.size < 10000){
-            	int random = ran.nextInt(20000);
-            	counter ++;
-            	
-            	int in = random *2 + 1;
-            	
-                if (bst.add(new Item(in))) {
-                    dataSet.add(new Item(in));
-                }
-            }
-            
-            Item.resetCompCount();
-            
-            for (Item d : dataSet) {
-            	bst.contains(new Item((d.value()*2)));
-            }
-            
-            System.out.println("Number of Comparisons for Failed Searches: " + Item.getCompCount() + "\n");
-            
-            System.out.println("Tree Height: " + bst.TreeHeight(bst.root));
-            
-            System.out.println("\n Clearing Tree...");
-            
-            for (Item d : dataSet) {
-                if (bst.remove(d)) {
-                    count--;
-                    if (count != bst.size()) {
-                        errorCount++;  // tree size was not updated
-                    }
-                }
-                else  { // d was not removed
-                    errorCount++;
-                }
-            } 
-            
-            
-            dataSet.clear();
-            
-            /**
-             * This is the odd numbers testing of the 200000 range
-             */
-            
-            dataSet.clear();
-            
-            Item.resetCompCount();
-            
-            System.out.println("Adding odd numbers 1 through 200000 in order...\n");
-            
-            counter = 0 ;
-            
-            while(bst.size < 100000){
-            	int order =  counter + 1;
-            	counter ++;
-            	
-            	int in = order *2 + 1;
-            	
-                if (bst.add(new Item(in))) {
-                    dataSet.add(new Item(in));
-                }
-            }
-            
-            Item.resetCompCount();
-            
-            for (Item d : dataSet) {
-            	bst.contains(new Item((d.value()*2)));
-            }
-            
-            System.out.println("Number of Comparisons for Failed Searches: " + Item.getCompCount() + "\n");
-            
-            System.out.println("\n Clearing Tree...\n");
-            
-            for (Item d : dataSet) {
-                if (bst.remove(d)) {
-                    count--;
-                    if (count != bst.size()) {
-                        errorCount++;  // tree size was not updated
-                    }
-                }
-                else  { // d was not removed
-                    errorCount++;
-                }
-            }
-            
-            System.out.println("Complete....\n");
-            
-            dataSet.clear();
-            
-            Item.resetCompCount();
-            
-            System.out.println("Adding odd numbers 1 through 200000 randomly...\n");
-            
-            counter = 0 ;
-            
-            while(bst.size < 100000){
-            	int random = ran.nextInt(200000);
-            	counter ++;
-            	
-            	int in = random *2 + 1;
-            	
-                if (bst.add(new Item(in))) {
-                    dataSet.add(new Item(in));
-                }
-            }
-            
-            Item.resetCompCount();
-            
-            for (Item d : dataSet) {
-            	bst.contains(new Item((d.value()*2)));
-            }
-            
-            System.out.println("Number of Comparisons for Failed Searches: " + Item.getCompCount() + "\n");
-            
-            System.out.println("Tree Height: " + bst.TreeHeight(bst.root));
-            
-            System.out.println("\n Clearing Tree...");
-            
-            for (Item d : dataSet) {
-                if (bst.remove(d)) {
-                    count--;
-                    if (count != bst.size()) {
-                        errorCount++;  // tree size was not updated
-                    }
-                }
-                else  { // d was not removed
-                    errorCount++;
-                }
-            } 
-            
-            
-            dataSet.clear();
-            
-        }
 
     }
-    
+
 }

@@ -1,4 +1,4 @@
-package part1;
+package package1;
 import java.util.*;
 /**
  * A class that represents a binary search tree.
@@ -12,7 +12,7 @@ import java.util.*;
 public class BinarySearchTree<E extends Comparable<? super E>> 
         extends AbstractSet<E> 
 {
-    // The root of this tree. This is null when the tree is empty.
+    // The root of this tree. This has been changed to be an external node without a parent when the tree is empty..
     protected Entry<E> root;
 
     // The number of entries in this tree. This is zero when the tree is empty.
@@ -31,7 +31,7 @@ public class BinarySearchTree<E extends Comparable<? super E>>
      */ 
     public BinarySearchTree() 
     {
-        root = null;
+        root = new Entry<E>();
         size = 0;  
     } // default constructor
 
@@ -170,47 +170,14 @@ public class BinarySearchTree<E extends Comparable<? super E>>
      */
     public boolean add (E element)  
     {
-        if (root == null) 
-        {
-            if (element == null)
-                throw new NullPointerException();
-            root = new Entry<E> (element, null);
-            size++;
-            modCount++;
-            return true;
-        } // empty tree
-        else 
-        {
-            Entry<E> temp = root;
-
-            int comp;
-
-            while (true) 
-            {
-                comp =  element.compareTo (temp.element);
-                if (comp == 0)
-                    return false;
-                if (comp < 0)
-                    if (temp.left.IsExternal() == false)
-                        temp = temp.left;
-                    else 
-                    {
-                        temp.left.MakeInternal(element);
-                        size++;
-                        modCount++;
-                        return true;
-                    } // temp.left == null
-                    else if (temp.right.IsExternal() == false)
-                        temp = temp.right;
-                    else 
-                    {
-                        temp.right.MakeInternal(element);
-                        size++;
-                        modCount++;
-                        return true;
-                    } // temp.right == null
-            } // while
-        } // root not null
+    		Entry<E> entry = getEntry(element);
+    		if (entry.IsExternal()) {
+    		entry.MakeInternal(element);;
+    		size++;
+    		modCount++;
+    		return true;
+    		} else
+    		return false;
     } // method add
 
 
@@ -273,7 +240,7 @@ public class BinarySearchTree<E extends Comparable<? super E>>
             else
                 e = e.right;
         } // while
-        return null;
+        return e;
     } // method getEntry
     
   
@@ -324,13 +291,10 @@ public class BinarySearchTree<E extends Comparable<? super E>>
                 p.parent.right = replacement;
         } // p has at least one child  
         else if (p.parent == null)
-            root = null;
+            root = new Entry<E>();
         else 
         {
-            if (p == p.parent.left)
-                p.parent.left = new Entry<E>(p.parent);
-            else
-                p.parent.right = new Entry<E>(p.parent);        
+        	p.MakeExternal();      
         } // p has a parent but no children
         return p;
     } // method deleteEntry
@@ -504,15 +468,15 @@ public class BinarySearchTree<E extends Comparable<? super E>>
     	return BreadthFirst;
     }
 
-    public int TreeHeight(Entry<E> e){
+    public int treeHeight(){
     	
-    	if (e == null){
-    		return 0;
+    	if (root.IsExternal()){
+    		return -1;
     	}
     	
     	Queue<Entry<E>> Tracker = new LinkedList<Entry<E>>();
     	
-    	Tracker.add(e);
+    	Tracker.add(root);
     	int height = -1;
     	
     	while(0==0){
@@ -544,6 +508,18 @@ public class BinarySearchTree<E extends Comparable<? super E>>
     	
     }
     
+    private int countLeaves(Entry<E> node) {
+    	if (node.IsExternal()) return 0;
+    	if (node.isLeaf()) return 1;
+    	int count = countLeaves(node.left);
+    	count += countLeaves(node.right);
+    	return count;
+    	}
+    
+    public int leaves() {
+    	return countLeaves(root);
+    	}
+    
     
     protected static class Entry<E> 
     {
@@ -557,15 +533,26 @@ public class BinarySearchTree<E extends Comparable<? super E>>
          *  Initializes this Entry object.
          *
          *  This default constructor is defined for the sake of subclasses of
-         *  the BinarySearchTree class. 
+         *  the BinarySearchTree class.
+         *  
+         *   Default Contructor is also used to create the root of a tree.
          */
-        public Entry() { }
+        public Entry() {
+          	 this.element = null;
+           	 this.parent = null;
+           	 this.right = null;
+           	 this.left = null;
+        	
+        	
+        }
 
 
         /**
          *  Initializes this Entry object from element and parent.
          *
          */ 
+        
+        
         
         //Constructor For External Nodes
         public Entry (Entry<E> parent){
@@ -625,6 +612,11 @@ public class BinarySearchTree<E extends Comparable<? super E>>
         	 return Result;
         	 
          }
+         
+         public boolean isLeaf() {
+        	 return !IsExternal() &&
+        	 (left.IsExternal() && right.IsExternal());
+        	 }
          
 
     } // class Entry
